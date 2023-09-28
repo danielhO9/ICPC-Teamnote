@@ -1,36 +1,35 @@
 /**
- * Author: Simon Lindholm
- * Date: 2017-05-11
- * License: CC0
- * Source: folklore
+ * Author: -
+ * Date: -
+ * License: -
+ * Source: https://cp-algorithms.com/data_structures/fenwick.html
  * Description: Computes sums a[i,j] for all i<I, j<J, and increases single elements a[i,j].
- *  Requires that the elements to be updated are known in advance (call fakeUpdate() before init()).
- * Time: $O(\log^2 N)$. (Use persistent segment trees for $O(\log N)$.)
+ * Time: $O(\log^2 N)$.
  * Status: stress-tested
  */
 #pragma once
 
 #include "FenwickTree.h"
 
-struct FT2 {
-	vector<vi> ys; vector<FT> ft;
-	FT2(int limx) : ys(limx) {}
-	void fakeUpdate(int x, int y) {
-		for (; x < sz(ys); x |= x + 1) ys[x].push_back(y);
+struct FenwickTree2D {
+    vector<vector<int>> bit;
+    int n, m;
+
+	FenwickTree2D(int n, int m) : n(_n), m(_m) {
+		bit.assign(n, vector<int>(m, 0));
 	}
-	void init() {
-		for (vi& v : ys) sort(all(v)), ft.emplace_back(sz(v));
-	}
-	int ind(int x, int y) {
-		return (int)(lower_bound(all(ys[x]), y) - ys[x].begin()); }
-	void update(int x, int y, ll dif) {
-		for (; x < sz(ys); x |= x + 1)
-			ft[x].update(ind(x, y), dif);
-	}
-	ll query(int x, int y) {
-		ll sum = 0;
-		for (; x; x &= x - 1)
-			sum += ft[x-1].query(ind(x-1, y));
-		return sum;
-	}
+
+    int sum(int x, int y) {
+        int ret = 0;
+        for (int i = x; i >= 0; i = (i & (i + 1)) - 1)
+            for (int j = y; j >= 0; j = (j & (j + 1)) - 1)
+                ret += bit[i][j];
+        return ret;
+    }
+
+    void add(int x, int y, int delta) {
+        for (int i = x; i < n; i = i | (i + 1))
+            for (int j = y; j < m; j = j | (j + 1))
+                bit[i][j] += delta;
+    }
 };
