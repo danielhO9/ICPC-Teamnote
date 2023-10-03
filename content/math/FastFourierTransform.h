@@ -52,5 +52,5 @@ void multiply(const vi &a,const vi &b,vi &res)
     fft(fa,true);
     res.resize(n);
     for (int i=0;i<n;i++)
-        res[i] = int(fa[i].real()+(fa[i].real()>0?0.5:-0.5));
+        res[i] = (int)fa[i].real()+(fa[i].real()>0?0.5:-0.5);
 }
