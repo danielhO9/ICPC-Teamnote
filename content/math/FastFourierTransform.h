@@ -11,7 +11,6 @@
 
 #define sz(v) ((int)(v).size())
 #define all(v) (v).begin(),(v).end()
-typedef vector<int> vi;
 typedef complex<double> base;
 
 void fft(vector <base> &a, bool invert)
