@@ -41,16 +41,16 @@ void fft(vector <base> &a, bool invert)
     }
 }
 
-void multiply(const vi &a,const vi &b,vi &res)
+vector<int> multiply(vector<int>& a, vector<int>& b)
 {
-    vector <base> fa(all(a)), fb(all(b));
-    int n = 1;
-    while (n < max(sz(a),sz(b))) n <<= 1;
+    vector<base> fa(all(a)), fb(all(b));
+    int n = 1, m = sz(a)+sz(b)-1;
+    while (n < m) n <<= 1;
     fa.resize(n); fb.resize(n);
-    fft(fa,false); fft(fb,false);
+    fft(fa, false); fft(fb, false);
     for (int i=0;i<n;i++) fa[i] *= fb[i];
-    fft(fa,true);
-    res.resize(n);
-    for (int i=0;i<n;i++)
-        res[i] = (int)fa[i].real()+(fa[i].real()>0?0.5:-0.5);
+    fft(fa, true);
+    vector<int> ret(m);
+    for (int i=0;i<m;i++) ret[i] = fa[i].real()+(fa[i].real()>0?0.5:-0.5); // removed casting to int here.. should be fine
+    return ret;
 }
