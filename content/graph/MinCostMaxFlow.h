@@ -1,7 +1,7 @@
 /**
- * Author:
+ * Author: dlwocks31
  * Date: Unknown
- * Source: koosaga blog
+ * Source: https://www.acmicpc.net/source/share/0564c2345dcb419685d9bf436dc643ed
  * Description: Min cost max flow
  * Time: Fast
  */
