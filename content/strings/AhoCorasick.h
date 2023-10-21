@@ -1,79 +1,61 @@
 /**
- * Source: My implementation
+ * Source: https://cp-algorithms.com/string/aho_corasick.html
+ * Description: Each $\text{Vertex}$  contains the flag $\text{output}$  
+ * and the edges in the form of an array $\text{next}[]$ , 
+ * where $\text{next}[i]$  is the index of the vertex that we reach by
+ * following the character $i$ , or $-1$  if there is no such edge.
  * Status: stress-tested
  */
-struct Trie {
-    int score = 0, id = 0;
-    string prefix;
-    Trie *next[26];
-    Trie *fail;
-    Trie(string s) {
-        score = 0;
-        id = trie_node_list.size();
-        prefix = s;
-        memset(next, 0, sizeof(next));
-        trie_node_list.push_back(this);
-    }
-    void insert(string &s, int p) {
-        if (p >= s.length())
-            return;
-        else {
-            int cur = s[p] - 'A';
-            if (next[cur] == NULL) {
-                string nxt_str = prefix;
-                nxt_str.push_back(s[p]);
-                next[cur] = new Trie(nxt_str);
-            }
-            next[cur]->insert(s, p+1);
-        }
+const int K = 26;
+
+struct Vertex {
+    int next[K];
+    bool output = false;
+    int p = -1;
+    char pch;
+    int link = -1;
+    int go[K];
+
+    Vertex(int p=-1, char ch='$') : p(p), pch(ch) {
+        fill(begin(next), end(next), -1);
+        fill(begin(go), end(go), -1);
     }
 };
-Trie* root = new Trie("");
 
-Trie* follow(Trie* node, int ind) {
-    Trie* u = node;
-    while (u != root && !u->next[ind])
-        u = u -> fail;
-    if (u -> next[ind])
-        u = u -> next[ind];
-    return u;
-}
+vector<Vertex> t(1);
 
-void build_failure_links() {
-    queue<Trie*> q;
-    root->fail = root;
-    q.push(root);
-    while (!q.empty()) {
-        Trie *cur = q.front();
-        q.pop();
-        for (int i = 0; i < 26; i++) {
-            Trie *nxt = cur->next[i];
-            if (!nxt) continue;
-            if (cur == root) nxt->fail = root;
-            else {
-                Trie * prev = cur -> fail;
-                prev = follow(prev, i);
-                nxt->fail = prev;
-            }
-            q.push(nxt);
+void add_string(string const& s) {
+    int v = 0;
+    for (char ch : s) {
+        int c = ch - 'a';
+        if (t[v].next[c] == -1) {
+            t[v].next[c] = t.size();
+            t.emplace_back(v, ch);
         }
+        v = t[v].next[c];
     }
+    t[v].output = true;
 }
 
-bool match(string text) {
-    Trie* current = root;
-    bool result = false;
-    for(char _c : text){
-        int c = _c - 'a';
-        while(current != root && !current->next[c])
-            current = current->fail;
-        // move if next node is present.
-        if(current->next[c])
-            current = current->next[c];
-        // found output!
-        if(current->output){
-            result = true;
-            break;
-        }
+int go(int v, char ch);
+
+int get_link(int v) {
+    if (t[v].link == -1) {
+        if (v == 0 || t[v].p == 0)
+            t[v].link = 0;
+        else
+            t[v].link = go(get_link(t[v].p), t[v].pch);
     }
+    return t[v].link;
 }
+
+int go(int v, char ch) {
+    int c = ch - 'a';
+    if (t[v].go[c] == -1) {
+        if (t[v].next[c] != -1)
+            t[v].go[c] = t[v].next[c];
+        else
+            t[v].go[c] = v == 0 ? 0 : go(get_link(v), ch);
+    }
+    return t[v].go[c];
+} 
