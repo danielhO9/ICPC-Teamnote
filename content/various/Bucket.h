@@ -7,8 +7,7 @@
  */
 
 struct bset {
-    // bitset is a size-64 bucket
-    bitset<64> arr[1577];
+    bitset<64> arr[1577]; // bitset is a size-64 bucket
     bset() {}
     // single-query
     inline int bitquery(int idx) {

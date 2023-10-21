@@ -15,14 +15,12 @@ public:
     int n;
     int m;
     vector<vector<int>> tree;
-
     SEG2D(int n = 0, int m = 0) {
         tree.resize(2 * n);
         for (int i = 0; i < 2 * n; i++) tree[i].resize(2 * m);
         this->n = n;
         this->m = m;
     }
-
     SEG2D(int n, int m, vector<vector<int>> &data) {
         tree.resize(2 * n);
         for (int i = 0; i < 2 * n; i++) tree[i].resize(2 * m);
@@ -30,7 +28,6 @@ public:
         this->m = m;
         init(data);
     }
-
     void init(vector<vector<int>> &data) {
         n = data.size();
         m = data.front().size();
@@ -45,7 +42,6 @@ public:
             for (int j = 1; j < 2 * m; j++) 
                 tree[i][j] = gif(tree[i * 2][j], tree[i * 2 + 1][j]);
     }
-
     void update(int x, int y, int val) {
         tree[x + n][y + m] = val;
         for (int i = y + m; i > 1; i /= 2)
@@ -54,7 +50,6 @@ public:
             for (int j = y + m; j >= 1; j /= 2)
                 tree[i / 2][j] = gif(tree[i][j], tree[i ^ 1][j]);
     }
-
     int query_1D(int x, int yl, int yr) {
         int res = 0;
         int u = yl + m, v = yr + m + 1;
@@ -66,7 +61,6 @@ public:
         }
         return res;
     }
-
     int query_2D(int xl, int xr, int yl, int yr) {
         int res = 0;
         int u = xl + n, v = xr + n + 1;
