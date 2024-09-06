@@ -54,12 +54,11 @@
 
 \def\today{\number\year-\ifthenelse{\number\month<10}{0}{}\number\month-\ifthenelse{\number\day<10}{0}{}\number\day} % Defines \today as YYYY-MM-DD
 
-\renewcommand{\maketitle}[2]{
-	\begin{center}
-		{\Huge \@title}\\
-		{\huge \@subtitle{} version #2}\\[0.1cm]
-		{\Huge \textsc{#1}}
-	\end{center}
+\renewcommand{\maketitle}{
+	\begin{flushright}
+		{\@unilong\  - \@teamname}
+		\thepage
+	\end{flushright}
 }
 
 % Remove temp files from old failed runs
