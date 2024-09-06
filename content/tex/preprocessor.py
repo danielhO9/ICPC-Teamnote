@@ -6,9 +6,10 @@
 # License: CC0
 
 from __future__ import print_function
-import sys
+
 import getopt
 import subprocess
+import sys
 
 
 def escape(input):
@@ -214,10 +215,12 @@ def print_header(data, outstream):
     header_length = len("".join(lines[:ind]))
     def adjust(name):
         return name if name.startswith('.') else name.split('.')[0]
-    output = r"\enspace{}".join(map(adjust, lines[:ind]))
-    font_size = 10
-    if header_length > 150:
-        font_size = 8
+    limit = 6
+    if ind > limit:
+        output = r"\enspace{}".join(map(adjust, lines[:limit])) + r"\enspace{}..."
+    else:
+        output = r"\enspace{}".join(map(adjust, lines[:ind]))
+    font_size = 8
     output = r"\hspace{3mm}\textbf{" + output + "}"
     output = "\\fontsize{%d}{%d}" % (font_size, font_size) + output
     print(output, file=outstream)

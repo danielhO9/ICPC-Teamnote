@@ -1,53 +1,82 @@
 /**
- * Source: http://www.secmem.org/blog/2021/07/18/suffix-array-and-lcp/
+ * Source: https://cp-algorithms.com/string/suffix-array.html
  * Description: Builds suffix array for a string.
- * \texttt{sa[i]} is the starting index of the suffix which
- * is $i$'th in the sorted suffix array.
- * The returned vector is of size $n+1$, and \texttt{sa[0] = n}.
- * The \texttt{lcp} array contains longest common prefixes for
- * neighbouring strings in the suffix array:
- * \texttt{lcp[i] = lcp(sa[i], sa[i-1])}, \texttt{lcp[0] = 0}.
- * The input string must not contain any zero bytes.
- * Time: O(n \log n)
+ * Note, that this algorithm only sorts the cycle shifts. 
+ * We can generate the sorted order of the suffixes by appending a character that is smaller than
+ * all other characters of the string, and sorting this resulting string by cycle shifts, 
+ * e.g. by sorting the cycle shifts of s + \$.
  * Status: BOJ 9248
  */
 
-struct SuffixArray {
-    vector <int> buildSA(string &s) {
-        int n = s.length(), m = max(256, n) + 1;
-        vector <int> sa(n), rank(n*2), new_rank(n*2), cnt(m), idx(n);
-        for (int i = 0; i < n; i++) {
-            rank[i] = s[i]; sa[i] = i;
-        }
-        for (int d = 1; d < n; d = d * 2) {
-            auto cmp = [&](int i,int j){
-                return rank[i] < rank[j] || (rank[i]==rank[j] && rank[i+d]<rank[j+d]);};
-            fill(cnt.begin(), cnt.end(), 0);
-            for (int i = 0; i < n; i++) cnt[rank[i+d]]++;
-            for (int i = 1; i < m; i++) cnt[i] += cnt[i-1];
-            for (int i = n-1; i >= 0; i--) idx[--cnt[rank[i+d]]] = i;
-            fill(cnt.begin(), cnt.end(), 0);
-            for (int i = 0; i < n; i++) cnt[rank[i]]++;
-            for (int i = 1; i < m; i++) cnt[i] += cnt[i-1];
-            for (int i = n-1; i >= 0; i--) sa[--cnt[rank[idx[i]]]] = idx[i];
-            new_rank[sa[0]] = 1;
-            for (int i = 1; i < n; i++) new_rank[sa[i]] = new_rank[sa[i-1]] + cmp(sa[i-1], sa[i]);
-            rank = new_rank;
-            if (rank[sa[n-1]] == n) break;
-        }
-        return sa;
+vector<int> sort_cyclic_shifts(string &s) {
+    int n = s.size();
+    const int alphabet = 256;
+    vector<int> p(n), c(n), cnt(max(alphabet, n)), pn(n), cn(n);
+    // p[i] = locaction of ith string
+    for(int i=0; i<n; i++)
+        cnt[s[i]]++;
+    for(int i=1; i<alphabet; i++)
+        cnt[i] += cnt[i-1];
+    for(int i=n-1; i>=0; i--)
+        p[--cnt[s[i]]] = i;
+    // c[i] = equivalence class of position i
+    c[p[0]] = 0;
+    int classes = 1;
+    for(int i=1; i<n; i++) {
+        if(s[p[i]] != s[p[i-1]])
+            classes++;
+        c[p[i]] = classes - 1;
     }
 
-    vector <int> buildLCP(string &s, vector<int> &sa) {
-        int n = s.length();
-        vector <int> lcp(n), isa(n);
-        for (int i = 0; i < n; i++) isa[sa[i]] = i;
-        for (int k = 0, i = 0; i < n; i++) {
-            if (!isa[i]) continue;
-            for(int j = sa[isa[i]-1]; s[i+k]==s[j+k]; k++);
-            lcp[isa[i]] = (k ? k-- : 0);
+    for(int h=0; (1<<h) < n; h++) {
+        // preprocess pn
+        for(int i=0; i<n; i++) {
+            pn[i] = p[i] - (1<<h);
+            if(pn[i] < 0)
+                pn[i] += n;
         }
-        return lcp;
+        
+        // find next p by counting sort stably
+        fill(cnt.begin(), cnt.end(), 0);
+        for(int i=0; i<n; i++)
+            cnt[c[i]]++;
+        for(int i=1; i<classes; i++)
+            cnt[i] += cnt[i-1];
+        for(int i=n-1; i>=0; i--)
+            p[--cnt[c[pn[i]]]] = pn[i];
+        // find next c
+        cn[p[0]] = 0;
+        classes = 1;
+        for(int i=1; i<n; i++) {
+            auto prv = make_pair(c[p[i]], c[(p[i] + (1<<h)) % n]), 
+                 nxt = make_pair(c[p[i-1]], c[(p[i-1] + (1<<h)) % n]);
+            
+            if(prv != nxt)
+                classes++;
+            cn[p[i]] = classes - 1;
+        }
+        swap(cn, c);
     }
-};
-
+    return p;
+}
+vector<int> lcp_construction(string const& s, vector<int> const& p) {
+    int n = s.size(), k = 0;
+    // rank[i] = order of [string on location i]
+    vector<int> rank(n), lcp(n-1);
+    for(int i=0; i<n; i++)
+        rank[p[i]] = i;
+    
+    for(int i=0; i<n; i++) {
+        if(rank[i] == n-1) {
+            k = 0;
+            continue;
+        }
+        int j = p[rank[i] + 1];
+        while(i+k<n && j+k<n && s[i+k] == s[j+k])
+            k++;
+        lcp[rank[i]] = k;
+        if(k)
+            k--;
+    }
+    return lcp;
+}
