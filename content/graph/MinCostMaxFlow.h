@@ -3,7 +3,7 @@
  * Date: Unknown
  * Source: https://www.acmicpc.net/source/share/0564c2345dcb419685d9bf436dc643ed
  * Description: Min cost max flow
- * Time: Fast
+ * Time: O(VEf) (practically O(Ef)) where f is maximum flow
  */
 struct Edge{
     int u, v, w, cap, flow;

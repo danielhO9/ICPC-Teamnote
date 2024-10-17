@@ -1,51 +1,83 @@
 /**
- * Author: DHDroid
- * Date: 2021-10-08
+ * Author: daniel604
+ * Date: 2024-10-17
  */
-struct SegTree {
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+
+struct LazyPropagation {
+	vector<ll> arr;
 	vector<ll> tree;
 	vector<ll> lazy;
-	SegTree(int n) {
-		tree.resize(4*n, 0);
-		lazy.resize(4*n, 0);
+	ll sz;
+
+	void init(vector<ll>& a, ll sz_) {
+		sz = sz_;
+		arr = a;
+		ll h = (ll)ceil(log2(sz));
+		ll tree_size = (1 << (h + 1));
+		tree = vector<ll>(tree_size);
+		lazy = vector<ll>(tree_size);
+		init_(1, 0, sz - 1);
 	}
-	ll init(vector<ll>& v, int node, ll l, ll r) {
-		if(l==r) 
-			return tree[node] = v[l];
+	void init_(ll node, ll start, ll end) {
+		if (start == end) tree[node] = arr[start];
 		else {
-			ll mid = (l+r) >> 1;
-			return tree[node] = init(v, 2*node, l, mid) + init(v, 2*node+1, mid+1, r); 
+			init_(node * 2, start, (start + end) / 2);
+			init_(node * 2 + 1, (start + end) / 2 + 1, end);
+			tree[node] = tree[node * 2] + tree[node * 2 + 1];
 		}
 	}
-	void propagate(int node, ll l, ll r) {
-		tree[node] += lazy[node] * (r-l+1LL);
-		lazy[2*node] += lazy[node];
-		lazy[2*node + 1] += lazy[node];
-		lazy[node] = 0;
-	}
-    // add on [s, e]
-	ll update(int node, ll l, ll r, ll s, ll e, ll v) {
-		if(s <= l && e >= r) {
-			lazy[node] += v;
-			return tree[node] + lazy[node] * (r-l+1LL);
-		}
-		else if(e < l || s > r)
-			return tree[node] + lazy[node] * (r-l+1LL);
-		else {
-			propagate(node, l, r);
-			ll mid = (l+r) >> 1;
-			return tree[node] = update(2*node, l, mid, s, e, v) + update(2*node+1, mid+1, r, s, e, v); 
+	void update_lazy(ll node, ll start, ll end) {
+		if (lazy[node] != 0) {
+			tree[node] += (end - start + 1) * lazy[node];
+			if (start != end) {
+				lazy[node * 2] += lazy[node];
+				lazy[node * 2 + 1] += lazy[node];
+			}
+			lazy[node] = 0;
 		}
 	}
-	ll query(int node, ll l, ll r, ll s, ll e) {
-		if(s <= l && e >= r)
-			return tree[node] + lazy[node] * (r-l+1LL);
-		else if(e < l || s > r)
+	void update_range(ll node, ll start, ll end, ll left, ll right, ll diff) {
+		update_lazy(node, start, end);
+		if (left > end || right < start) {
+			return;
+		}
+		if (left <= start && end <= right) {
+			tree[node] += (end - start + 1) * diff;
+			if (start != end) {
+				lazy[node * 2] += diff;
+				lazy[node * 2 + 1] += diff;
+			}
+			return;
+		}
+		update_range(node * 2, start, (start + end) / 2, left, right, diff);
+		update_range(node * 2 + 1, (start + end) / 2 + 1, end, left, right, diff);
+		tree[node] = tree[node * 2] + tree[node * 2 + 1];
+	}
+	void update(ll left, ll right, ll val) {
+		update_range(1, 0, sz - 1, left, right, val);
+	}
+	ll query(ll node, ll start, ll end, ll left, ll right) {
+		update_lazy(node, start, end);
+		if (left > end || right < start) {
 			return 0;
-		else {
-			propagate(node, l, r);
-			ll mid = (l+r) >> 1;
-			return query(2*node, l, mid, s, e) + query(2*node+1, mid+1, r, s, e); 
 		}
+		if (left <= start && end <= right) {
+			return tree[node];
+		}
+		ll lsum = query(node * 2, start, (start+end) / 2, left, right);
+		ll rsum = query(node * 2 + 1, (start+end) / 2 + 1, end, left, right);
+		return lsum + rsum;
 	}
-};
+	ll query(ll left, ll right) {
+		return query(1, 0, sz - 1, left, right);
+	}
+} seg;
+
+void solve() {
+	ll MAX_N;
+    vector<ll> a(MAX_N);
+    seg.init(a, MAX_N);
+}
