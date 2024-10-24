@@ -8,15 +8,12 @@ struct SAT {
     vector<int> val, num, low, stk, scc, visiting;
     int nxt, n, cnt;
     int f(int i) {
-        if(i < 0) i = -i+n;
-        return i;
+        return i < 0 ? -i+n : i;
     }
     int neg(int i) {
-        if(i >= n)
-            return i-n;
-        return i + n;
+        return i >= n ? i-n : i+n;
     }
-    SAT(int _n, vector<pair<int, int>>& edges) {
+    SAT(int _n, vector<pair<int, int>>& edges):  {
         n = _n+1;
         adj.resize(2*n+1);
         val.resize(2*n+1);

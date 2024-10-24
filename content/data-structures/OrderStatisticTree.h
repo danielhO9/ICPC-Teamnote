@@ -1,21 +1,14 @@
 #include <bits/extc++.h>
-using namespace __gnu_pbds;
-
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
-#include <ext/pb_ds/detail/standard_policies.hpp>
-typedef tree<int, null_type, less<int>, rb_tree_tag,
-tree_order_statistics_node_update> ordered_set;
+using namespace std;
+using namespace __gnu_pbds;
+typedef tree<int, null_type, less<int>, rb_tree_tag, tree_order_statistics_node_update> set_t;
 
 void test()
 {
-   ordered_set X;
-   X.insert(1);
-   X.insert(2);
-   X.insert(4);
-   X.insert(8);
-   X.insert(16);
-
+   set_t X;
+   // after insert 1, 2, 4, 8, 16
    cout<<*X.find_by_order(1)<<endl; // 2
    cout<<*X.find_by_order(2)<<endl; // 4
    cout<<*X.find_by_order(4)<<endl; // 16
