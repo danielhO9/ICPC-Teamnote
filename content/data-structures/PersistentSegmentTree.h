@@ -1,64 +1,71 @@
 /**
- * Author: stet-stet
- * Date: 2022-07-18
- * License: CC0
- * Source: folklore + ac-library(modified to fit our taste)
- * Description: Interval incremental modification, interval sum query on $[l, r)$.
+ * Author: daniel604
+ * Date: 2024-10-24
+ * Description: Interval incremental modification, interval sum query on $[l, r]$.
  * Time: O(\log N)
- * Status: tested(13544)
  */
-#include<algorithm>
-#include<vector>
-template<class T> T defaultValue(){ return T(); }
-template<class T> T defaultOperation(T a,T b){return a+b;}
-template <class S,S (*e)() = defaultValue<S> > 
-struct Node{
-    Node *l, *r;
-    long long v;
-    Node(){l=r=nullptr;v=e();}
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+
+struct Node {
+	int l, r;
+	ll val;
 };
-template <class S,S (*op)(S,S) = defaultOperation<S>,S (*e)() = defaultValue<S> > 
-class PST{ private:
-    using NN = Node<S,e>;
-    std::vector< NN* > d;
-    int log, sz, _n;
-    void build(NN *node, const std::vector<S>& x,int start,int end){
-        if(start==end && start<x.size()){ node->v = x[start]; return;}
-        else if(start==end){node->v = e(); return;} //
-        int m = (start+end)>>1;
-        node->l = new NN(); node->r = new NN();
-        build(node->l,x,start,m); build(node->r,x,m+1,end);
-        node->v = op(node->l->v,node->r->v);
-    }
-    void _a(NN *prv, NN *now, int start, int end, int x, int v){
-        if(start==end){now->v=v; return;}
-        int m=(start+end)>>1;
-        if(x<=m){
-            now->l = new NN(); now->r = prv->r;
-            _a(prv->l, now->l, start, m, x, v);
-        } else {
-            now->l = prv->l; now->r = new NN();
-            _a(prv->r,now->r,m+1,end,x,v);
-        }
-        now->v = op(now->l->v,now->r->v);
-    }
-    S _q(NN* node, int start, int end, int l, int r){ //query, [l,r)
-        if(r<start || end<l) return 0;
-        if(l<=start && end<=r) return node->v;
-        int m = (start+end)>>1;
-        return op(_q(node->l, start, m, l, r),_q(node->r,m+1,end,l,r));
-    }
-    public:
-    explicit PST(int n=100000): PST(std::vector<S>(n,e())) {}
-    explicit PST(const std::vector<S>& x) : _n(int(x.size())){
-        log=0;
-        while( (1U << log) < (unsigned int)(_n)) log++;
-        sz = 1<<log;
-        d.emplace_back(new NN()); build(d[0],x,0,sz-1);
-    }
-    void add(int loc, int v){
-        d.emplace_back(new NN()); _a(d[d.size()-2],d.back(), 0, sz-1, loc, v); 
-    }  
-    S query(int treeidx, int l, int r){ return _q(d[treeidx], 0, sz-1, l, r-1); }
-    int size(){return d.size();}
-};
+
+struct PST {
+	vector<Node> tree = {{0, 0, 0}, {0, 0, 0}};
+	vector<int> root;
+	int sz;
+	int ridx; // current root = root[ridx]
+
+	void init(int sz_) {
+		sz = sz_;
+		ridx = 1;
+		root.resize(sz);
+		root[0] = 1;
+	}
+	void changeRoot(int idx) { ridx = root[idx]; }
+	
+	void newRoot(int idx) {
+        root[idx] = tree.size();
+		tree.push_back({tree[ridx].l, tree[ridx].r, tree[ridx].val});
+		ridx = root[idx];
+	}
+	void update(int node, int start, int end, int index, ll val) {
+		if (index < start || index > end) return;
+		tree[node].val += val;
+		if (start == end) return;
+		int mid = (start + end) / 2;
+		if (index <= mid) {
+			int lidx = tree[node].l;
+			tree[node].l = tree.size();
+			tree.push_back({tree[lidx].l, tree[lidx].r, tree[lidx].val});
+			update(tree[node].l, start, mid, index, val);
+		}
+		if (index > mid) {
+			int ridx = tree[node].r;
+			tree[node].r = tree.size();
+			tree.push_back({tree[ridx].l, tree[ridx].r, tree[ridx].val});
+			update(tree[node].r, mid + 1, end, index, val);
+		}
+	}
+	void update(int rt, int index, ll val) {
+		update(root[rt], 0, sz - 1, index, val);
+	}
+	ll query(int node, int start, int end, int left, int right) {
+		if (left > end || right < start) return 0;
+		if (left <= start && end <= right) return tree[node].val;
+		ll lsum = query(tree[node].l, start, (start + end) / 2, left, right);
+		ll rsum = query(tree[node].r, (start + end) / 2 + 1, end, left, right);
+		return lsum + rsum;
+	}
+	ll query(int rt, int left, int right) {
+		return query(root[rt], 0, sz - 1, left, right);
+	}
+} seg;
+
+void solve() {
+	// root(vector) size
+	seg.init(1e5 + 1);
+}
