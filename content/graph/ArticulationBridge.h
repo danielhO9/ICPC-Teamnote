@@ -9,10 +9,9 @@
 
 const int MX = 100000;
 vector<int> adj[MX];
-int num[MX], low[MX], parent[MX];
-bool isarti[MX]; // only for articulation point
-int ind = 1;
-vector<pair<int, int>> ans; // only for articulation bridge
+int num[MX], low[MX], parent[MX], ind = 1;
+bool isarti[MX]; // for articulation point
+vector<pair<int, int>> ans; // for articulation bridge
 int dfs(int u, bool isroot) {
 	num[u] = low[u] = ind++;
 	int childcnt = 0;
@@ -24,13 +23,14 @@ int dfs(int u, bool isroot) {
 			childcnt++;
 			parent[a] = u;
 			low[u] = min(low[u], dfs(a, false));
-			// only for articulation point:
+			// for articulation point:
 			if(low[a] >= num[u])
 				isarti[u] = true;
-			// only for articulation bridge:
+			// for articulation bridge:
 			if(low[a] > num[u])
 				ans.emplace_back(min(a,u), max(a,u));
 		}
 	}
+	if(isroot) isarti[u] = (childcnt>=2); // for articulation point
 	return low[u];
 }
