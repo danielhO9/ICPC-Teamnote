@@ -1,6 +1,6 @@
 /**
  * Author: daniel604
- * Date: 2024-10-24
+ * Date: 2025-07-24
  * Description: Interval incremental modification, interval sum query on $[l, r]$.
  * Time: O(\log N)
  */
@@ -16,7 +16,7 @@ struct PST {
         tree.resize(1);
         root.resize(1);
 	}
-    // p에서 c로 분기
+	// Promote `c` as the new root, inheriting `p`'s subtree
 	void newRoot(int c, int p) {
         assert(p < root.size());
         while (root.size() <= c) root.push_back(0);
